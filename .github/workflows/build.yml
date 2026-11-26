@@ -8,6 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Find project
+        id: p
+        run: |
+          F=$(find . -name settings.gradle.kts -not -path './.git/*' | head -1)
+          if [ -z "$F" ]; then echo "settings.gradle.kts не найден — файлы проекта не залиты (или залит нераспакованный zip)"; exit 1; fi
+          echo "dir=$(dirname "$F")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -16,7 +22,8 @@ jobs:
         with:
           gradle-version: 8.9
       - run: gradle assembleDebug --no-daemon
+        working-directory: ${{ steps.p.outputs.dir }}
       - uses: actions/upload-artifact@v4
         with:
           name: McServer-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.p.outputs.dir }}/app/build/outputs/apk/debug/*.apk
