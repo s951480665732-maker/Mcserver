@@ -11,8 +11,15 @@ jobs:
       - name: Find project
         id: p
         run: |
-          F=$(find . -name settings.gradle.kts -not -path './.git/*' | head -1)
-          if [ -z "$F" ]; then echo "settings.gradle.kts не найден — файлы проекта не залиты (или залит нераспакованный zip)"; exit 1; fi
+          for z in *.zip; do
+            if [ -f "$z" ]; then unzip -o -q "$z" -d unpacked; fi
+          done
+          F=$(find . \( -name settings.gradle.kts -o -name settings.gradle \) -not -path './.git/*' | head -1)
+          if [ -z "$F" ]; then
+            echo "Проєкт не знайдено. Файли в репозиторії:"
+            find . -not -path './.git/*'
+            exit 1
+          fi
           echo "dir=$(dirname "$F")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-java@v4
         with:
