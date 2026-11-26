@@ -16,11 +16,20 @@ jobs:
           done
           F=$(find . \( -name settings.gradle.kts -o -name settings.gradle \) -not -path './.git/*' | head -1)
           if [ -z "$F" ]; then
-            echo "Проєкт не знайдено. Файли в репозиторії:"
+            echo "Проект не найден. Файлы в репозитории:"
             find . -not -path './.git/*'
             exit 1
           fi
           echo "dir=$(dirname "$F")" >> "$GITHUB_OUTPUT"
+      - name: Fix icon
+        working-directory: ${{ steps.p.outputs.dir }}
+        run: |
+          FILE=app/src/main/java/com/mcserver/app/MainActivity.kt
+          echo "До:"
+          sed -n '588p' "$FILE"
+          sed -i -E '588s/Icons(\.[A-Za-z]+)+\.Image\b/Icons.Rounded.Image/g' "$FILE"
+          echo "После:"
+          sed -n '588p' "$FILE"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
